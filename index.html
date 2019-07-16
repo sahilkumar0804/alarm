@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <span>current time</span>:<span id="current"></span><br>
+    <input type="time" id="timer" placeholder="00:00"><br>
+    <button id="btn">add timer</button>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.dev.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    
+  $(function () {
+    const socket=io.connect("http://localhost:8000");
+    $("#btn").click(()=>
+    {
+         console.log($("#timer").val());
+        socket.emit("timer",$("#timer").val());
+    });
+     socket.on('alert',(msg)=>
+     {
+           window.location.href="/alarm";
+     });
+     
+    setInterval(()=>
+    {
+      var today = new Date();
+        var min= (today.getMinutes()<10)?"0"+today.getMinutes():today.getMinutes();
+        var hrs=today.getHours();
+        var sec=(today.getSeconds()<10)?"0"+today.getSeconds():today.getSeconds();
+        var time = hrs + ":" +min+":"+sec;
+          $("#current").html(time);
+    },1000);
+  });
+</script>
+</html>
+
