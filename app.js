@@ -1,6 +1,7 @@
-var express= require('express');
-var app=express();
+const express= require('express');
+const app=express();
 
+const queue= require("./priorityqueue");
 app.use(express.static("img"));
 
 app.get("/",(req,res)=>
@@ -22,22 +23,31 @@ io.on('connect', function(client)
 {
      let e=null;
     client.on('timer', function(msg){
-      e=setInterval(() => {
-        var today = new Date();
-        var min= (today.getMinutes()<10)?"0"+today.getMinutes():today.getMinutes();
-        var hrs=today.getHours();
-        var time = hrs + ":" +min;
-        if(time==msg)
-           { 
-            client.emit("alert" ,time);
-            clearInterval(e);
-           }
-        }, 1000);
+        queue.enqueue( msg,client );
       });
-      client.on('disconnect', function() {
-        {
-            console.log(client.id);
-            clearInterval(e);
-        }
-   });
 });
+let e;
+// if(!(queue.isEmpty()))
+// {
+  e=setInterval(() => {
+    var today = new Date();
+    var min= (today.getMinutes()<10)?"0"+today.getMinutes():today.getMinutes();
+    var hrs=today.getHours();
+    var time = hrs + ":" +min;
+    if(!(queue.isEmpty()))
+     {
+        if(time==(queue.peek()).time)
+        { 
+  
+          (queue.peek()).client.emit("alert" ,time);
+           queue.dequeue();
+        }
+      }
+    }, 1000);
+// }
+// else
+//   {
+//      clearInterval(e);
+//   }
+
+
